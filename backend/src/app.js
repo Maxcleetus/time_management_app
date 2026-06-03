@@ -33,31 +33,37 @@ function isAllowedOrigin(origin) {
   }
 }
 
+const corsOptions = {
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error(`CORS blocked origin: ${origin}`));
+  },
+  credentials: true
+};
+
+function registerRoutes(prefix = "") {
+  app.get(`${prefix}/health`, (_req, res) => {
+    res.json({ status: "ok", service: "time-management-api", timestamp: new Date().toISOString() });
+  });
+
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/tasks`, taskRoutes);
+  app.use(`${prefix}/time-entries`, timeEntryRoutes);
+  app.use(`${prefix}/reports`, reportRoutes);
+  app.use(`${prefix}/users`, userRoutes);
+}
+
 app.use(helmet());
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (isAllowedOrigin(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error(`CORS blocked origin: ${origin}`));
-    },
-    credentials: true
-  })
-);
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "time-management-api", timestamp: new Date().toISOString() });
-});
-
-app.use("/api/auth", authRoutes);
-app.use("/api/tasks", taskRoutes);
-app.use("/api/time-entries", timeEntryRoutes);
-app.use("/api/reports", reportRoutes);
-app.use("/api/users", userRoutes);
+registerRoutes("/api");
+registerRoutes();
 
 app.use(notFound);
 app.use(errorHandler);

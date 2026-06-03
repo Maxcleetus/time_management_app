@@ -6,6 +6,8 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "build": "find src api -name '*.js' -exec node --check {} \\;",
+    "install:all": "npm install",
     "start": "node src/server.js"
   },
   "dependencies": {
