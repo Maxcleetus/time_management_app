@@ -110,54 +110,73 @@ Open `http://localhost:5173`.
 
 - Use MongoDB Atlas or a managed MongoDB instance.
 - Set `JWT_SECRET`, `MONGODB_URI`, and `CLIENT_ORIGIN`.
-- For Vercel, deploy this repo as one project. The React app is static output and the Express API runs as a serverless function.
+- For Vercel, deploy backend and frontend as two separate projects.
 
-## Deploy Full App To Vercel
+## Deploy Backend To Vercel
 
-This repo is configured as a single Vercel project:
+Create/import one Vercel project for the backend.
 
-- React/Vite builds from `frontend/` into `frontend/dist`.
-- Express runs as a Vercel serverless function from `api/[...path].js`.
-- API requests use the same Vercel domain at `/api`.
+```text
+Root Directory: backend
+Framework Preset: Other
+Install Command: npm install
+Build Command: npm run build
+Output Directory: leave empty
+```
+
+The backend uses [backend/vercel.json](./backend/vercel.json), and the serverless API entry is [backend/api/[...path].js](./backend/api/[...path].js).
 
 Before deploying, create a MongoDB Atlas cluster or another hosted MongoDB database. Vercel serverless functions cannot connect to the local Docker MongoDB container in production.
 
-Set these Vercel environment variables:
+Set these backend environment variables:
 
 ```text
 MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/time_management_app?retryWrites=true&w=majority
 JWT_SECRET=use-a-long-random-production-secret
 JWT_EXPIRES_IN=7d
-CLIENT_ORIGIN=https://your-vercel-project.vercel.app
+CLIENT_ORIGIN=https://your-frontend-project.vercel.app
 ```
 
-For custom domains, set `CLIENT_ORIGIN` to the custom HTTPS URL. Multiple origins can be comma-separated.
+After backend deployment, test:
 
-Deploy from the project root:
+```text
+https://your-backend-project.vercel.app/api/health
+```
+
+## Deploy Frontend To Vercel
+
+Create/import a second Vercel project for the frontend.
+
+```text
+Root Directory: frontend
+Framework Preset: Vite
+Install Command: npm install
+Build Command: npm run build
+Output Directory: dist
+```
+
+Set this frontend environment variable:
+
+```text
+VITE_API_URL=https://your-backend-project.vercel.app/api
+```
+
+The frontend uses [frontend/vercel.json](./frontend/vercel.json).
+
+After frontend deployment, update the backend `CLIENT_ORIGIN` to the final frontend URL and redeploy the backend.
+
+For custom domains, use the custom HTTPS URL in both `CLIENT_ORIGIN` and `VITE_API_URL`.
+
+You can also deploy each project with Vercel CLI from its folder:
 
 ```bash
 npm i -g vercel
 vercel login
+cd backend
 vercel
 vercel --prod
-```
 
-Vercel will use [vercel.json](./vercel.json):
-
-```text
-installCommand: npm install --prefix backend && npm install --prefix frontend
-buildCommand: npm run build --prefix frontend
-outputDirectory: frontend/dist
-serverless API: api/[...path].js
-```
-
-In the Vercel dashboard, keep the project Root Directory as the repository root. Do not set it to `frontend` or `backend`, because the serverless API lives in the root `api/` folder, imports backend code from `backend/`, and builds the React app from `frontend/`.
-
-If Vercel logs show a path like `/vercel/path0/backend/backend/package.json`, your Root Directory is set to `backend`. Change it to the repository root, then redeploy.
-
-After deployment, test:
-
-```text
-https://your-vercel-project.vercel.app/api/health
-https://your-vercel-project.vercel.app
+cd ../frontend
+vercel
+vercel --prod
 ```
