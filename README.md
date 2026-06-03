@@ -110,54 +110,7 @@ Open `http://localhost:5173`.
 
 - Use MongoDB Atlas or a managed MongoDB instance.
 - Set `JWT_SECRET`, `MONGODB_URI`, and `CLIENT_ORIGIN`.
-- For separate hosting, deploy `backend` and `frontend` as two Vercel projects.
-
-## Deploy Backend Separately To Vercel
-
-Create one Vercel project for the backend:
-
-```text
-Root Directory: backend
-Install Command: npm install
-Build Command: npm run build
-Output Directory: leave empty
-```
-
-The backend uses [backend/vercel.json](./backend/vercel.json) and exposes the Express API as a serverless function from [backend/api/[...path].js](./backend/api/[...path].js).
-
-Set these backend Vercel environment variables:
-
-```text
-MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/time_management_app?retryWrites=true&w=majority
-JWT_SECRET=use-a-long-random-production-secret
-JWT_EXPIRES_IN=7d
-CLIENT_ORIGIN=https://your-frontend-project.vercel.app
-```
-
-After deploy, test:
-
-```text
-https://your-backend-project.vercel.app/api/health
-```
-
-## Deploy Frontend Separately To Vercel
-
-Create a second Vercel project for the frontend:
-
-```text
-Root Directory: frontend
-Install Command: npm install
-Build Command: npm run build
-Output Directory: dist
-```
-
-Set this frontend Vercel environment variable:
-
-```text
-VITE_API_URL=https://your-backend-project.vercel.app/api
-```
-
-The frontend uses [frontend/vercel.json](./frontend/vercel.json).
+- For Vercel, deploy this repo as one project. The React app is static output and the Express API runs as a serverless function.
 
 ## Deploy Full App To Vercel
 
