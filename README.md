@@ -145,11 +145,13 @@ vercel --prod
 Vercel will use [vercel.json](./vercel.json):
 
 ```text
-installCommand: npm run install:all
-buildCommand: npm run build
+installCommand: npm install --prefix backend && npm install --prefix frontend
+buildCommand: npm run build --prefix frontend
 outputDirectory: frontend/dist
 serverless API: api/[...path].js
 ```
+
+In the Vercel dashboard, keep the project Root Directory as the repository root. Do not set it to `frontend`, because the serverless API lives in the root `api/` folder and imports backend code from `backend/`.
 
 After deployment, test:
 
